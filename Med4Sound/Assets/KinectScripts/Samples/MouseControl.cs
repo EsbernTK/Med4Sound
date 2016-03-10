@@ -57,12 +57,34 @@ public class MouseControl
 	
 	[DllImport("user32.dll", SetLastError = true)]
 	static extern IntPtr GetWindow(IntPtr hWnd, GetWindow_Cmd uCmd);
+
+	const int MONITOR_DEFAULTTONULL = 0;
+	const int MONITOR_DEFAULTTOPRIMARY = 1;
+	const int MONITOR_DEFAULTTONEAREST = 2;
+
+	[DllImport("user32.dll")]
+	static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+	[StructLayout(LayoutKind.Sequential)]
+	private struct MONITORINFO
+	{
+		public int cbSize;
+		public RECT rcMonitor;
+		public RECT rcWork;
+		public uint dwFlags;
+	}
+
+	[DllImport("user32.dll")]
+	static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
 	
 //	private static int windowX = 0;
 //	private static int windowY = 0;
 //	private static int winSizeX = 0;
 //	private static int winSizeY = 0;
 
+	private static Vector2 monitorSize = Vector2.zero;
+	private static MONITORINFO monitorInfo = new MONITORINFO();
 	private static bool winRectPrinted = false;
 
 
@@ -79,18 +101,18 @@ public class MouseControl
 		IntPtr hWnd = GetActiveWindow();
 		hWnd = GetClosestWindow(hWnd, Screen.width, Screen.height);
 
-		if(hWnd != IntPtr.Zero)
+		if (hWnd != IntPtr.Zero) 
 		{
 			RECT winRect;
 
-			if(GetWindowRect(hWnd, out winRect))
+			if (GetWindowRect(hWnd, out winRect)) 
 			{
 				winSizeX = winRect.Right - winRect.Left;
 				winSizeY = winRect.Bottom - winRect.Top;
 
 				windowX = winRect.Left + (winSizeX - (int)Screen.width) / 2;
 				
-				if(!isConvertToFullScreen)
+				if (!isConvertToFullScreen)
 				{
 					windowY = winRect.Top + (winSizeY - (int)Screen.height + 36) / 2;
 				}
@@ -99,12 +121,43 @@ public class MouseControl
 					windowY = winRect.Top + (winSizeY - (int)Screen.height) / 2;
 				}
 
-				if(!winRectPrinted)
+				// get display resolution
+				if (monitorSize == Vector2.zero)
 				{
-//					Debug.Log(string.Format("scrRes: ({0}, {1})", Screen.currentResolution.width, Screen.currentResolution.height));
-//					Debug.Log(string.Format("winRect: ({0}, {1}, {2}, {3})", winRect.Left, winRect.Top, winRect.Right, winRect.Bottom));
+					monitorInfo.cbSize = Marshal.SizeOf (monitorInfo);
+
+					IntPtr hMonitoŕ = MonitorFromWindow (hWnd, MONITOR_DEFAULTTONEAREST);
+					if (!GetMonitorInfo (hMonitoŕ, ref monitorInfo))
+					{
+						monitorInfo.rcMonitor.Left = monitorInfo.rcMonitor.Top = 0;
+						monitorInfo.rcMonitor.Right = Screen.currentResolution.width - 1;
+						monitorInfo.rcMonitor.Bottom = Screen.currentResolution.height - 1;
+
+						monitorInfo.rcWork.Left = monitorInfo.rcWork.Top = 0;
+						monitorInfo.rcWork.Right = Screen.currentResolution.width - 1;
+						monitorInfo.rcWork.Bottom = Screen.currentResolution.height - 1;
+					}
+
+					monitorSize.x = monitorInfo.rcMonitor.Right - monitorInfo.rcMonitor.Left + 1;
+					monitorSize.y = monitorInfo.rcMonitor.Bottom - monitorInfo.rcMonitor.Top + 1;
+				}
+
+				if (!winRectPrinted)
+				{
+					Debug.Log (string.Format ("monSize: ({0}, {1})", monitorSize.x, monitorSize.y));
+					Debug.Log (string.Format ("scrSize: ({0}, {1})", Screen.width, Screen.height));
+					Debug.Log (string.Format ("winRect: ({0}, {1}, {2}, {3})", winRect.Left, winRect.Top, winRect.Right, winRect.Bottom));
+					Debug.Log (string.Format ("winPos: ({0}, {1})", windowX, windowY));
 					winRectPrinted = true;
 				}
+			}
+		}
+		else 
+		{
+			if (monitorSize == Vector2.zero) 
+			{
+				monitorSize.x = Screen.currentResolution.width;
+				monitorSize.y = Screen.currentResolution.height;
 			}
 		}
 
@@ -116,18 +169,16 @@ public class MouseControl
 			float screenX = windowX + screenCoordinates.x * Screen.width;
 			float screenY = windowY + (1f - screenCoordinates.y) * Screen.height;
 
-			float screenRelX = screenX / Screen.currentResolution.width;
-			float screenRelY = screenY / Screen.currentResolution.height;
+			float screenRelX = screenX / monitorSize.x;
+			float screenRelY = screenY / monitorSize.y;
 			
 //			if(debugText)
 //			{
-//				if(!debugText.guiText.text.Contains("ScrPos"))
+//				if(!debugText.GetComponent<GUIText>().text.Contains("ScrPos"))
 //				{
-//					debugText.guiText.text += string.Format(", ScrSize: ({0}, {1}), WinSize: ({2}, {3}), WinPos: ({4}, {5}), ScrPos: ({6:F0}, {7:F0})", 
-//					                                        Screen.width, Screen.height, 
-//					                                        winSizeX, winSizeY, 
-//					                                        windowX, windowY,
-//					                                        screenX, screenY);
+//					string sDebug = string.Format("\nScrPos: ({0:F0}, {1:F0})", screenX, screenY);
+//					debugText.GetComponent<GUIText> ().text += sDebug;
+//					//Debug.Log (sDebug);
 //				}
 //			}
 

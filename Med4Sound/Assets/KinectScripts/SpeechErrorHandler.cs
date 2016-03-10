@@ -148,5 +148,7 @@ public class SpeechErrorHandler
 		{0x8004507D, "The word passed to the GetPronunciations interface needs normalizing first."},
 		{0x8004507E, "The word passed to the normalize interface cannot be normalized."},
 		{0x80045080, "This combination of function call and input is currently not supported."},
+
+		{0x80070015, "Device not ready."},
 	};
 }

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 //using Windows.Kinect;
 
@@ -51,18 +51,18 @@ public class SkeletonOverlayer : MonoBehaviour
 				}
 			}
 
-			if(linePrefab)
-			{
-				// array holding the skeleton lines
-				lines = new LineRenderer[jointsCount];
-				
-				for(int i = 0; i < lines.Length; i++)
-				{
-					lines[i] = Instantiate(linePrefab) as LineRenderer;
-					lines[i].transform.parent = transform;
-					lines[i].gameObject.SetActive(false);
-				}
-			}
+			// array holding the skeleton lines
+			lines = new LineRenderer[jointsCount];
+
+//			if(linePrefab)
+//			{
+//				for(int i = 0; i < lines.Length; i++)
+//				{
+//					lines[i] = Instantiate(linePrefab) as LineRenderer;
+//					lines[i].transform.parent = transform;
+//					lines[i].gameObject.SetActive(false);
+//				}
+//			}
 		}
 
 		// always mirrored
@@ -130,12 +130,18 @@ public class SkeletonOverlayer : MonoBehaviour
 							}
 						}
 
-						if(lines != null)
+						if(lines[i] == null && linePrefab != null)
+						{
+							lines[i] = Instantiate(linePrefab) as LineRenderer;
+							lines[i].transform.parent = transform;
+							lines[i].gameObject.SetActive(false);
+						}
+
+						if(lines[i] != null)
 						{
 							// overlay the line to the parent joint
 							int jointParent = (int)manager.GetParentJoint((KinectInterop.JointType)joint);
 							Vector3 posParent = manager.GetJointPosColorOverlay(userId, jointParent, foregroundCamera, backgroundRect);
-							//Vector3 posParent = manager.GetJointPosition(userId, jointParent);
 
 							if(posJoint != Vector3.zero && posParent != Vector3.zero)
 							{
@@ -159,7 +165,7 @@ public class SkeletonOverlayer : MonoBehaviour
 							joints[i].SetActive(false);
 						}
 						
-						if(lines != null)
+						if(lines[i] != null)
 						{
 							lines[i].gameObject.SetActive(false);
 						}

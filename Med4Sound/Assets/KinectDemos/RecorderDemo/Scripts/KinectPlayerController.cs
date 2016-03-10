@@ -52,7 +52,37 @@ public class KinectPlayerController : MonoBehaviour
 				
 				speechManager.ClearPhraseRecognized();
 			}
-			
+		}
+
+		// alternatively, use the keyboard
+		if(Input.GetButtonDown("Jump"))  // start or stop recording
+		{
+			if(saverPlayer)
+			{
+				if(!saverPlayer.IsRecording())
+				{
+					saverPlayer.StartRecording();
+				}
+				else
+				{
+					saverPlayer.StopRecordingOrPlaying();
+				}
+			}
+		}
+
+		if(Input.GetButtonDown("Fire1"))  // start or stop playing
+		{
+			if(saverPlayer)
+			{
+				if(!saverPlayer.IsPlaying())
+				{
+					saverPlayer.StartPlaying();
+				}
+				else
+				{
+					saverPlayer.StopRecordingOrPlaying();
+				}
+			}
 		}
 
 	}

@@ -1,4 +1,4 @@
-﻿// comment out the following #define, if you want to use the depth sensor and the KinectManager on per-scene basis
+// comment out the following #define, if you want to use the depth sensor and the KinectManager on per-scene basis
 #define USE_SINGLE_KM_IN_MULTIPLE_SCENES
 
 
@@ -70,11 +70,11 @@ public class KinectManager : MonoBehaviour
 	[Tooltip("Whether to detect only the closest user first or not.")]
 	public bool detectClosestUser = true;
 
-	[Tooltip("Whether to ignore the Z-coordinates of the joints (i.e. use them in 2D-scenes) or not.")]
-	public bool ignoreZCoordinates = false;
-	
 	[Tooltip("Whether to utilize only the tracked joints (and ignore the inferred ones) or not.")]
 	public bool ignoreInferredJoints = false;
+	
+	[Tooltip("Whether to ignore the Z-coordinates of the joints (i.e. use them in 2D-scenes) or not.")]
+	public bool ignoreZCoordinates = false;
 	
 	[Tooltip("Whether to update the AvatarControllers in LateUpdate(), instead of in Update(). Needed for Mocap-Mecanim blending.")]
 	public bool lateUpdateAvatars = false;
@@ -871,7 +871,8 @@ public class KinectManager : MonoBehaviour
 								float yScaled = (float)posDepth.y * imageRect.height / sensorData.depthImageHeight;
 
 								float xScreen = imageRect.x + xScaled;
-								float yScreen = camera.pixelHeight - (imageRect.y + yScaled);
+								//float yScreen = camera.pixelHeight - (imageRect.y + yScaled);
+								float yScreen = imageRect.y + imageRect.height - yScaled;
 								
 								Plane cameraPlane = new Plane(camera.transform.forward, camera.transform.position);
 								float zDistance = cameraPlane.GetDistanceToPoint(posJointRaw);
@@ -924,14 +925,12 @@ public class KinectManager : MonoBehaviour
 
 							if(!float.IsInfinity(posColor.x) && !float.IsInfinity(posColor.y))
 							{
-//								float xNorm = (float)posColor.x / sensorData.colorImageWidth;
-//								float yNorm = 1.0f - (float)posColor.y / sensorData.colorImageHeight;
-
 								float xScaled = (float)posColor.x * imageRect.width / sensorData.colorImageWidth;
 								float yScaled = (float)posColor.y * imageRect.height / sensorData.colorImageHeight;
 								
 								float xScreen = imageRect.x + xScaled;
-								float yScreen = camera.pixelHeight - (imageRect.y + yScaled);
+								//float yScreen = camera.pixelHeight - (imageRect.y + yScaled);
+								float yScreen = imageRect.y + imageRect.height - yScaled;
 
 								Plane cameraPlane = new Plane(camera.transform.forward, camera.transform.position);
 								float zDistance = cameraPlane.GetDistanceToPoint(posJointRaw);
@@ -1104,7 +1103,9 @@ public class KinectManager : MonoBehaviour
 					
 				if(bodyData.joint[(int)KinectInterop.JointType.SpineBase].trackingState != KinectInterop.TrackingState.NotTracked)
 				{
-					leftBotBack.z = bodyData.joint[(int)KinectInterop.JointType.SpineBase].position.z;
+					//leftBotBack.z = bodyData.joint[(int)KinectInterop.JointType.SpineBase].position.z;
+					leftBotBack.z = !ignoreZCoordinates ? bodyData.joint[(int)KinectInterop.JointType.SpineBase].position.z :
+						(bodyData.joint[(int)KinectInterop.JointType.HandLeft].position.z + 0.1f);
 					rightTopFront.z = leftBotBack.z - 0.5f;
 				}
 				else
@@ -1168,7 +1169,9 @@ public class KinectManager : MonoBehaviour
 					
 				if(bodyData.joint[(int)KinectInterop.JointType.SpineBase].trackingState != KinectInterop.TrackingState.NotTracked)
 				{
-					leftBotBack.z = bodyData.joint[(int)KinectInterop.JointType.SpineBase].position.z;
+					//leftBotBack.z = bodyData.joint[(int)KinectInterop.JointType.SpineBase].position.z;
+					leftBotBack.z = !ignoreZCoordinates ? bodyData.joint[(int)KinectInterop.JointType.SpineBase].position.z :
+						(bodyData.joint[(int)KinectInterop.JointType.HandRight].position.z + 0.1f);
 					rightTopFront.z = leftBotBack.z - 0.5f;
 				}
 				else
@@ -1758,7 +1761,7 @@ public class KinectManager : MonoBehaviour
 //				dwFlags |= KinectInterop.FrameSource.TypeAudio;
 
 			// open the default sensor
-			sensorData = KinectInterop.OpenDefaultSensor(sensorInterfaces, dwFlags, sensorAngle, useMultiSourceReader);
+			sensorData = KinectInterop.OpenDefaultSensor(sensorInterfaces, dwFlags, sensorAngle, useMultiSourceReader, computeUserMap);
 			if (sensorData == null)
 			{
 				if(sensorInterfaces == null || sensorInterfaces.Count == 0)

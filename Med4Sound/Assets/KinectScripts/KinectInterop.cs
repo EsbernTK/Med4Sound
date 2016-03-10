@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 //using Windows.Kinect;
 
 using System.Collections;
@@ -561,8 +561,8 @@ public class KinectInterop
 	}
 
 	// opens the default sensor and needed readers
-	public static SensorData OpenDefaultSensor(List<DepthSensorInterface> listInterfaces, 
-	                                           FrameSource dwFlags, float sensorAngle, bool bUseMultiSource)
+	public static SensorData OpenDefaultSensor(List<DepthSensorInterface> listInterfaces, FrameSource dwFlags, 
+		float sensorAngle, bool bUseMultiSource, KinectManager.UserMapType userMapType)
 	{
 		SensorData sensorData = null;
 		if(listInterfaces == null)
@@ -637,7 +637,8 @@ public class KinectInterop
 							sensorData.colorImageTexture = new Texture2D(sensorData.colorImageWidth, sensorData.colorImageHeight, TextureFormat.RGBA32, false);
 						}
 						
-						if(sensorData.bodyIndexImage != null && sensorData.colorImage != null && IsDirectX11Available())
+						if(sensorData.bodyIndexImage != null && sensorData.colorImage != null && IsDirectX11Available() &&
+							userMapType == KinectManager.UserMapType.CutOutTexture)
 						{
 							Shader depth2ColorShader = Shader.Find("Kinect/Depth2ColorShader");
 
@@ -659,7 +660,8 @@ public class KinectInterop
 							}
 						}
 
-						if(sensorData.bodyIndexImage != null && sensorData.colorImage != null)
+						if(sensorData.bodyIndexImage != null && sensorData.colorImage != null && IsDirectX11Available() &&
+							userMapType == KinectManager.UserMapType.CutOutTexture)
 						{
 							sensorData.depth2ColorCoords = new Vector2[sensorData.depthImage.Length];
 						}
@@ -1244,8 +1246,9 @@ public class KinectInterop
 						sensorData.depthCoordsBufferReady = (sensorData.color2DepthCoords != null);
 					}
 				}
-				else if((userMapType == KinectManager.UserMapType.CutOutTexture || sensorData.sensorInterface.IsBackgroundRemovalActive()) && 
-				        sensorData.depth2ColorCoords != null)
+				else if(sensorData.depth2ColorCoords != null && (userMapType == KinectManager.UserMapType.CutOutTexture || 
+					    (sensorData.sensorInterface.IsBackgroundRemovalActive() && 
+						 sensorData.sensorInterface.GetSensorPlatform() != KinectInterop.DepthSensorPlatform.KinectSDKv1)))
 				{
 					// wait for buffer release
 					while(sensorData.depthCoordsBufferReady)
@@ -1811,6 +1814,7 @@ public class KinectInterop
 		
 		// reload the same level
 		Application.LoadLevel(Application.loadedLevel);
+		//SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 	}
 
 	// sets the graphics shader level

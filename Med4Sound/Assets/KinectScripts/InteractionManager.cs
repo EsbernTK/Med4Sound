@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 //using Windows.Kinect;
 
 using System.Collections;
@@ -519,12 +519,11 @@ public class InteractionManager : MonoBehaviour
 
 					if((leftHandClickProgress < 0.8f) /**&& !isLeftHandPress*/)
 					{
-						cursorScreenPos = Vector3.Lerp(cursorScreenPos, leftHandScreenPos, smoothFactor * Time.deltaTime);
+						float smooth = smoothFactor * Time.deltaTime;
+						if(smooth == 0f) smooth = 1f;
+						
+						cursorScreenPos = Vector3.Lerp(cursorScreenPos, leftHandScreenPos, smooth);
 					}
-//					else
-//					{
-//						leftHandScreenPos = cursorScreenPos;
-//					}
 
 					if(controlMouseCursor && !useHandCursor)
 					{
@@ -566,12 +565,11 @@ public class InteractionManager : MonoBehaviour
 
 					if((rightHandClickProgress < 0.8f) /**&& !isRightHandPress*/)
 					{
-						cursorScreenPos = Vector3.Lerp(cursorScreenPos, rightHandScreenPos, smoothFactor * Time.deltaTime);
+						float smooth = smoothFactor * Time.deltaTime;
+						if(smooth == 0f) smooth = 1f;
+						
+						cursorScreenPos = Vector3.Lerp(cursorScreenPos, rightHandScreenPos, smooth);
 					}
-//					else
-//					{
-//						rightHandScreenPos = cursorScreenPos;
-//					}
 
 					if(controlMouseCursor && !useHandCursor)
 					{
@@ -644,7 +642,7 @@ public class InteractionManager : MonoBehaviour
 
 			//if(isLeftHandPrimary)
 			{
-				sGuiText += "LCursor: " + leftHandScreenPos.ToString();
+				sGuiText += "LCursor" + (isLeftHandPrimary ? "*: " : " : ") + leftHandScreenPos.ToString();
 				
 				if(lastLeftHandEvent == HandEventType.Grip)
 				{
@@ -672,7 +670,7 @@ public class InteractionManager : MonoBehaviour
 			
 			//if(isRightHandPrimary)
 			{
-				sGuiText += "\nRCursor: " + rightHandScreenPos.ToString();
+				sGuiText += "\nRCursor" + (isRightHandPrimary ? "*: " : " : ") + rightHandScreenPos.ToString();
 				
 				if(lastRightHandEvent == HandEventType.Grip)
 				{

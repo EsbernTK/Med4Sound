@@ -1,4 +1,4 @@
-﻿using RootSystem = System;
+using RootSystem = System;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;

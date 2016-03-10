@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 using System;
 using System.Collections;
@@ -181,10 +181,10 @@ public class BoneOrientationsConstraint
 
 			if(sDebug.Length > 0)
 			{
-//				if(debugText != null && jc.thisJoint == (int)KinectInterop.JointType.ElbowLeft)
-//				{
+				if(debugText != null && jc.thisJoint == (int)KinectInterop.JointType.ElbowLeft)
+				{
 //					debugText.GetComponent<GUIText>().text = sDebug;
-//				}
+				}
 
 				Debug.Log(sDebug);
 			}
@@ -277,7 +277,7 @@ public class BoneOrientationsConstraint
 		return backRot * rotation;
 	}
 	
-	private static Quaternion LimitTwist(Quaternion rotation, Vector3 axis, float limit) 
+	private Quaternion LimitTwist(Quaternion rotation, Vector3 axis, float limit) 
 	{
 		limit = Mathf.Clamp(limit, 0f, 180f);
 		if (limit >= 180f) 

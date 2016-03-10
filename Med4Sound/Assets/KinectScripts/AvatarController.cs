@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 //using Windows.Kinect;
 
 using System;
@@ -23,6 +23,9 @@ public class AvatarController : MonoBehaviour
 	
 	[Tooltip("Whether the avatar is allowed to move vertically or not.")]
 	public bool verticalMovement = false;
+
+	[Tooltip("Whether the avatar's root motion is applied by other component or script.")]
+	public bool externalRootMotion = false;
 	
 	[Tooltip("Rate at which the avatar will move through the scene.")]
 	public float moveRate = 1f;
@@ -147,7 +150,9 @@ public class AvatarController : MonoBehaviour
 		get
 		{
 			if (!_transformCache) 
+			{
 				_transformCache = base.transform;
+			}
 
 			return _transformCache;
 		}
@@ -197,7 +202,10 @@ public class AvatarController : MonoBehaviour
 		}
 		
 		// move the avatar to its Kinect position
-		MoveAvatar(UserID);
+		if(!externalRootMotion)
+		{
+			MoveAvatar(UserID);
+		}
 
 		for (var boneIndex = 0; boneIndex < bones.Length; boneIndex++)
 		{
@@ -303,9 +311,15 @@ public class AvatarController : MonoBehaviour
 		if(jointRotation == Quaternion.identity)
 			return;
 
-		// Smoothly transition to the new rotation
+		// calculate the new orientation
 		Quaternion newRotation = Kinect2AvatarRot(jointRotation, boneIndex);
 
+		if(externalRootMotion)
+		{
+			newRotation = transform.rotation * newRotation;
+		}
+
+		// Smoothly transition to the new rotation
 		if(smoothFactor != 0f)
         	boneTransform.rotation = Quaternion.Slerp(boneTransform.rotation, newRotation, smoothFactor * Time.deltaTime);
 		else

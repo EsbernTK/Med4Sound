@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.IO;
@@ -194,6 +194,10 @@ public class SpeechManager : MonoBehaviour
 					{
 						string sResText = textRes.text;
 						File.WriteAllText(grammarFileName, sResText);
+					}
+					else
+					{
+						throw new Exception("Couldn't find grammar resource: " + grammarFileName + ".txt");
 					}
 				}
 
