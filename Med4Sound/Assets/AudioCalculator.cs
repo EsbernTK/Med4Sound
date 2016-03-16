@@ -9,6 +9,7 @@ public class AudioCalculator : NetworkBehaviour
     //[SyncVar] private float beamAngle2;
     [SyncVar] public Vector3 TrackedVector3;
 
+    public GameObject AudioTrackedGameObject;
     private Vector3 kinectOffset;
     private OffsetCalculator offsetCalculator;
 
@@ -40,7 +41,8 @@ public class AudioCalculator : NetworkBehaviour
 
                 Vector3 interSectionPoint = offsetCalculator.vectorIntersectionPoint(angle1, angle2);
                 TrackedVector3 = interSectionPoint;
-            }
+	            AudioTrackedGameObject.transform.position = TrackedVector3;
+	        }
 	    }
 	}
 
