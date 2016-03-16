@@ -143,8 +143,14 @@ public class TestScript : MonoBehaviour{
         //aSource1.AudioBeams[0].
         if (Input.GetKeyDown(KeyCode.A))
         {
-            SampleAudio();
+            //SampleAudio();
         }
+    }
+
+
+    public void SimpleAudioTracking()
+    {
+        
     }
 
 

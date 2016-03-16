@@ -151,7 +151,7 @@ public class KinectManager : MonoBehaviour
 	private int usersClrSize;
 	
 	// Kinect body frame data
-	private KinectInterop.BodyFrameData bodyFrame;
+	public KinectInterop.BodyFrameData bodyFrame;
 	//private Int64 lastBodyFrameTime = 0;
 	
 	// List of all users
