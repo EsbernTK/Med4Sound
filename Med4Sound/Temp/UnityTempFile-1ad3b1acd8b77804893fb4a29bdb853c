@@ -17,6 +17,7 @@
 -r:Assets/KinectScripts/SharpZipLib/ICSharpCode.SharpZipLib.dll
 -r:"C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.Graphs.dll"
 -r:"C:/Program Files/Unity/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll"
+-r:"C:/Program Files (x86)/Microsoft Visual Studio Tools for Unity/2015/Editor/SyntaxTree.VisualStudio.Unity.Bridge.dll"
 -define:UNITY_5_3_2
 -define:UNITY_5_3
 -define:UNITY_5

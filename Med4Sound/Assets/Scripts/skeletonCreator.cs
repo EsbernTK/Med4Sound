@@ -12,7 +12,7 @@ public class skeletonCreator : NetworkBehaviour {
     public List<int> trackedJoints;
     public int[] tempJoints;
     string test;
-    uint playerID;
+    long playerID;
     KinectManager manager;
     public Button button;
     public Button button2;
@@ -55,7 +55,7 @@ public class skeletonCreator : NetworkBehaviour {
     void FixedUpdate()
     {
         if (hasAuthority) {
-            playerID = manager != null ? manager.GetPlayer1ID() : 0;
+            playerID = manager.GetUserIdByIndex(0);
             trackedJoints = new List<int>();
             getTrackedJoints();
             //if(time >= sendRate)
