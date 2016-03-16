@@ -23,7 +23,7 @@ public class AudioCalculator : NetworkBehaviour
     void Start () {
         if (Network.isServer)
         {
-            offsetCalculator = OffsetCalculator.offsetCalculator;
+            
             kinectSensor = KinectSensor.GetDefault();
         }
     }
@@ -32,9 +32,10 @@ public class AudioCalculator : NetworkBehaviour
     // Update is called once per frame
     void Update ()
 	{
-	    if (Network.isServer)
-	    {
-	        if (offsetCalculator.players.Length > 0)
+        // if (Network.isServer)
+        // {
+        offsetCalculator = OffsetCalculator.offsetCalculator;
+        if (offsetCalculator.players.Length > 0)
 	        {
                 float angle1 = Mathf.Rad2Deg * offsetCalculator.players[0].GetComponent<UserSyncPosition>().beamAngle;
                 float angle2 = Mathf.Rad2Deg * offsetCalculator.players[1].GetComponent<UserSyncPosition>().beamAngle;
@@ -43,7 +44,12 @@ public class AudioCalculator : NetworkBehaviour
                 TrackedVector3 = interSectionPoint;
 	            AudioTrackedGameObject.transform.position = TrackedVector3;
 	        }
-	    }
+	    //}
 	}
+
+    void OnDrawGizmos()
+    {
+        Gizmos.DrawCube(TrackedVector3,Vector3.one);
+    }
 
 }
