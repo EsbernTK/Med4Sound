@@ -167,7 +167,8 @@ public class UserSyncPosition : NetworkBehaviour
             }
             else
             {
-                //The KinecManager must be there therefore Move & Orient to tracked individual and Tell the server my new posistion and rotation
+                Debug.Log("Transmitting pos or wha5tever");
+                //The KinectManager must be there therefore Move & Orient to tracked individual and Tell the server my new posistion and rotation
                 MoveWithUser();
                 OrientWithUser();
                 CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
@@ -213,7 +214,11 @@ public class UserSyncPosition : NetworkBehaviour
         //Get the instance of the offsetCalculator class
         offsetCalculator = OffsetCalculator.offsetCalculator;
         //Get the position of the first tracked user
-        Vector3 posPointMan = manager.bodyFrame.bodyData[0].position;
+        Vector3 posPointMan = manager.GetJointPosition(manager.GetUserIdByIndex(0), 0);
+        for (int i = 0; i < manager.GetUsersCount(); i++)
+        {
+            //Debug.Log("User "+ i + manager.GetJointPosition(manager.GetUserIdByIndex(i),0));
+        }
         //Flip movement on the z axis of Mirrored movement is true
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
         posPointMan.x *= 1;
@@ -308,7 +313,8 @@ public class UserSyncPosition : NetworkBehaviour
         //If a skeleteon is tracked
         if (manager.IsUserDetected())
         {
-            Quaternion userOrientation = manager.bodyFrame.bodyData[0].orientation;
+            Quaternion userOrientation = manager.GetJointOrientation(manager.GetUserIdByIndex(0), 0, false);
+            //Quaternion userOrientation = manager.GetUserOrientation(0, false);
 
                 if (rotationalOffset)
                 {
