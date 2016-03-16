@@ -198,10 +198,8 @@ public class UserSyncPosition : NetworkBehaviour
     {
         //Get the instance of the offsetCalculator class
         offsetCalculator = OffsetCalculator.offsetCalculator;
-        //The first detected user is assigned player1, this check gets the ID of that user and assigns it to me
-        uint playerID = manager != null ? manager.GetPlayer1ID() : 0;
-        //Get the position of the player1
-        Vector3 posPointMan = manager.GetUserPosition(playerID);
+        //Get the position of the first tracked user
+        Vector3 posPointMan = manager.bodyFrame.bodyData[0].position;
         //Flip movement on the z axis of Mirrored movement is true
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
         posPointMan.x *= 1;
@@ -297,47 +295,7 @@ public class UserSyncPosition : NetworkBehaviour
         //If a skeleteon is tracked
         if (manager.IsUserDetected())
         {
-            //Get the first tracked skeletons id
-            uint userId = manager.GetPlayer1ID();
-
-            //If this skeletons shoulders and hip is tracked progress
-            if (manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.HipCenter) &&
-                manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter) &&
-                manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderLeft) &&
-                manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderRight))
-            {
-                //Save the position of the hips and the shoulders, tracked by the kinect
-                Vector3 posHipCenter = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.HipCenter);
-                Vector3 posShoulderCenter = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter);
-
-                Vector3 posLeftShoulder = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderLeft);
-                Vector3 posRightShoulder = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderRight);
-
-                //Mirror the z axis or else the movement will be opposite
-                posLeftShoulder.z = -posLeftShoulder.z;
-                posRightShoulder.z = -posRightShoulder.z;
-
-                posHipCenter.z = -posHipCenter.z;
-                posShoulderCenter.z = -posShoulderCenter.z;
-
-                //Get a vector between the shoulders of the user 
-                Vector3 dirLeftRight = posRightShoulder - posLeftShoulder;
-                dirLeftRight -= Vector3.Project(dirLeftRight, Vector3.up);
-
-                //Get A vector between the middle of the shoulder and the hip
-                Vector3 directionUpDown = posShoulderCenter - posHipCenter;
-                directionUpDown -= Vector3.Project(directionUpDown, Vector3.right);
-
-                //Get the rotation of the torse by getting the angle of the dirLeftRight Vector relative to right
-                Quaternion rotationShoulders = Quaternion.FromToRotation(Vector3.right, dirLeftRight);
-                // Get the tilt of the torse by getting the angle of the directionUpDown Vector relative to Up
-                Quaternion torsoTilt = Quaternion.FromToRotation(Vector3.up, directionUpDown);
-
-                //Mirror the torseTilt
-                torsoTilt.x = -torsoTilt.x;
-
-                //Combine both rotations
-                Quaternion userOrientation = torsoTilt * rotationShoulders;
+            Quaternion userOrientation = manager.bodyFrame.bodyData[0].orientation;
 
                 if (rotationalOffset)
                 {
@@ -350,7 +308,6 @@ public class UserSyncPosition : NetworkBehaviour
                     //Simple Apply this rotation to this gameObject
                     myTransform.rotation = userOrientation;
                 }
-            }
         }
     }
 }
