@@ -10,6 +10,7 @@ public class TestScript : MonoBehaviour{
     Windows.Kinect.AudioSource aSource1;
     Windows.Kinect.AudioSource aSource2;
 
+    public GameObject AudiGameObject;
     /// <summary>
     /// Number of samples captured from Kinect audio stream each millisecond.
     /// </summary>
@@ -137,6 +138,7 @@ public class TestScript : MonoBehaviour{
         //aSource2 = 
     }
 
+    public Vector3 SyncSoundSource;
     // Update is called once per frame
     void Update() {
         //Debug.Log(kinectSensor.AudioSource.AudioBeams[0].BeamAngle + " beamangle 1");

@@ -48,9 +48,17 @@ public class UserSyncPosition : NetworkBehaviour
 
     [SyncVar]public bool isGivenJoint = false;
     [SyncVar]public int jointNum = -1;
+
+    [SyncVar]public float beamAngle;
     // Update is called once per frame
     void Update()
     {
+        KinectSensor kinect = KinectSensor.GetDefault();
+
+        if (kinect.IsAvailable)
+        {
+            CmdProvideBeamAngleToServer(kinect.AudioSource.AudioBeams[0].BeamAngle);
+        }
         //If the L key is pressed on the keyboard call the method LogPosition
         if (Input.GetKeyUp(KeyCode.L))
         {
@@ -67,10 +75,8 @@ public class UserSyncPosition : NetworkBehaviour
             if (isGivenJoint && hasAuthority)
             {
                 TransmitPosition(jointNum);
-
             }
             else TransmitPosition();
-
         }
         //Call lerpPosition
         LerpPosition();
@@ -128,7 +134,15 @@ public class UserSyncPosition : NetworkBehaviour
         syncPos = pos;
         syncRot = rot;
     }
-    
+
+    [Command]
+    //CmdProvideBeamAngleToServer recieves one float from a client which it will then update on the server,
+    //which in turn will update it on all other clients
+    public void CmdProvideBeamAngleToServer(float _beamAngle)
+    {
+        beamAngle = _beamAngle;
+    }
+
     [Command]
     //Cmd_ChangeIdentity changes the colour of this object on the server which in turn will update it on all other clients
     public void Cmd_ChangeIdentity(Color col, string objectName)
@@ -286,7 +300,6 @@ public class UserSyncPosition : NetworkBehaviour
         Logger.LogData("Logging Position", transform.position, transform.rotation.eulerAngles,
             userId, "No time Logged " + (GetComponent<NetworkIdentity>().netId.Value - 1));
     }
-
 
     [Client]
     //This method is responsible for orienting the cube so it rotation and tilt coressponds to the tracked person orientation

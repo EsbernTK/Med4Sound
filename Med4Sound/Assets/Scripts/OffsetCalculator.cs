@@ -13,7 +13,7 @@ public class OffsetCalculator : NetworkBehaviour {
     private float player2angleOffset;
 
     //The players array is useed to contain the cubes in the scene
-    private GameObject[] players;
+    public GameObject[] players;
     private GameObject[] skeletonCreators;
 
     private float player1AngleFromKinect;
@@ -36,6 +36,7 @@ public class OffsetCalculator : NetworkBehaviour {
     bool run_once = true;
     bool continuedRun = false;
 
+    public bool velScene;
 
     void Start()
     {
@@ -52,8 +53,11 @@ public class OffsetCalculator : NetworkBehaviour {
 
         //Here the offsetcalculator variable is set to this instance of the script, making other scripts able to easily get this script
         offsetCalculator = this;
-        Button button = GameObject.FindGameObjectWithTag("AngleCalc").GetComponent<Button>();
-        button.onClick.AddListener(runSelectedVectorAngles);
+        if (velScene)
+        {
+            Button button = GameObject.FindGameObjectWithTag("AngleCalc").GetComponent<Button>();
+            button.onClick.AddListener(runSelectedVectorAngles);
+        }
     }
 
     void Update()
@@ -600,7 +604,7 @@ public class OffsetCalculator : NetworkBehaviour {
         }
         return intersectionPoint;
     }
-    public void vectorIntersectionPoint(float angle1, float angle2)
+    public Vector3 vectorIntersectionPoint(float angle1, float angle2)
     {
         //replace the parameters with the sound angles from kinects
         if(rotationalOffset.z < 10)
@@ -609,9 +613,12 @@ public class OffsetCalculator : NetworkBehaviour {
             Quaternion a2 = Quaternion.Euler(0, angle2 + rotationalOffset.y, 0);
             Vector3 d1 = a1 * Vector3.forward;
             Vector3 d2 = a2 * Vector3.forward;
-            Vector3 intersectionPoint = getIntersectionPoint(d1, d2, new Vector3(positionalOffset.x, 0, positionalOffset.z));
+            return  getIntersectionPoint(d1, d2, new Vector3(positionalOffset.x, 0, positionalOffset.z));
         }
+        return Vector3.zero;
     }
+
+
     public Vector3 findHeight(float depth, float angle)
     {
         Vector3 height = Vector3.zero;
