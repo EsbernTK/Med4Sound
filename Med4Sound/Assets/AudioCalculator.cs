@@ -32,8 +32,9 @@ public class AudioCalculator : NetworkBehaviour
     // Update is called once per frame
     void Update ()
 	{
-	    if (Network.isServer)
-	    {
+        //if (Network.isServer)
+        //{
+        offsetCalculator = OffsetCalculator.offsetCalculator;
 	        if (offsetCalculator.players.Length > 0)
 	        {
                 float angle1 = Mathf.Rad2Deg * offsetCalculator.players[0].GetComponent<UserSyncPosition>().beamAngle;
@@ -43,7 +44,7 @@ public class AudioCalculator : NetworkBehaviour
                 TrackedVector3 = interSectionPoint;
 	            AudioTrackedGameObject.transform.position = TrackedVector3;
 	        }
-	    }
+	   // }
 	}
 
 }

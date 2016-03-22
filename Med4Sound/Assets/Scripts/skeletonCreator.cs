@@ -54,7 +54,7 @@ public class skeletonCreator : NetworkBehaviour {
     [ClientCallback]
     void FixedUpdate()
     {
-        if (hasAuthority) {
+        if (hasAuthority && manager != null) {
             playerID = manager.GetUserIdByIndex(0);
             trackedJoints = new List<int>();
             getTrackedJoints();
