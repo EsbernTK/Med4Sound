@@ -198,10 +198,10 @@ public class UserSyncPosition : NetworkBehaviour
                 long user1Id = manager.GetUserIdByIndex(0);
 
                 int user1BodyIndex = manager.GetBodyIndexByUserId(user1Id);
-                KinectInterop.BodyData user1Body = manager.bodyFrame.bodyData[user1BodyIndex];
+                //KinectInterop.BodyData user1Body = manager.bodyFrame.bodyData[user1BodyIndex].joint[jointNum].position;
                 //
                 //uint playerID = manager != null ? manager.GetPlayer1ID() : 0;
-                MoveWithUser(user1Body.position);
+                MoveWithUser(manager.bodyFrame.bodyData[user1BodyIndex].joint[jointNum].position);
                 OrientWithUser();
                 CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
             }
