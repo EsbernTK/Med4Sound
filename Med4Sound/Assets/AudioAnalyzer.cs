@@ -5,8 +5,9 @@ using Windows.Kinect;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Windows.Data;
 
-public class TestScript : MonoBehaviour{
+public class AudioAnalyzer : MonoBehaviour{
 
     Windows.Kinect.AudioSource aSource1;
     Windows.Kinect.AudioSource aSource2;
@@ -129,12 +130,18 @@ public class TestScript : MonoBehaviour{
     /// </summary>
     private int energyRefreshIndex;
 
-
     AudioBeam aBeam;
+
+    private DepthFrameReader dFrameReader;
 
     // Use this for initialization
     void Start () {
         kinectSensor = KinectSensor.GetDefault();
+        // Get its audio source
+
+        // Open the sensor
+        kinectSensor.Open();
+
         // Get its audio source
         Windows.Kinect.AudioSource audioSource = kinectSensor.AudioSource;
 
@@ -146,13 +153,26 @@ public class TestScript : MonoBehaviour{
         audioBuffer = new byte[audioSource.SubFrameLengthInBytes];
 
         // Open the reader for the audio frames
-        reader = audioSource.OpenReader();
+        reader = kinectSensor.AudioSource.OpenReader();
+        Debug.Log("Setup stuff");
 
         if (reader != null)
         {
             // Subscribe to new audio frame arrived events
-            reader.FrameArrived += Reader_FrameArrived;
+            Debug.Log("Subscribe event");
+            reader.PropertyChanged += ReaderOnPropertyChanged;
+            reader.FrameArrived += ReaderOnFrameArrived;
         }
+    }
+
+    private void ReaderOnFrameArrived(object sender, AudioBeamFrameArrivedEventArgs audioBeamFrameArrivedEventArgs)
+    {
+        Debug.Log("Frame Arrived!!");
+    }
+
+    private void ReaderOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+    {
+        Debug.Log("PropertyChangedEvent");
     }
 
     public Vector3 SyncSoundSource;
@@ -162,13 +182,13 @@ public class TestScript : MonoBehaviour{
     public float recordingTime = 2;
 
     void Update() {
-        if (record)
+        if (reader != null)
         {
-            
+            Debug.Log("Got a reader!");
         }
     }
 
-    public IList<float> audioRecording; 
+    public List<float> audioRecording; 
 
     /// <summary>
     /// Handles the audio frame data arriving from the sensor
@@ -177,6 +197,8 @@ public class TestScript : MonoBehaviour{
     /// <param name="e">event arguments</param>
     private void Reader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
     {
+        Debug.Log("Frame Arrived");
+
         AudioBeamFrameReference frameReference = e.FrameReference;
        // AudioBeamFrameList frameList = frameReference.AcquireBeamFrames();
         IList<AudioBeamFrame> frameList = frameReference.AcquireBeamFrames();
@@ -188,7 +210,6 @@ public class TestScript : MonoBehaviour{
         {
                 // Only one audio beam is supported. Get the sub frame list for this beam
                 IList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
-
                 // Loop over all sub frames, extract audio buffer and beam information
                 foreach (AudioBeamSubFrame subFrame in subFrameList)
                 {
@@ -247,6 +268,22 @@ public class TestScript : MonoBehaviour{
             Debug.DrawLine(new Vector3(Mathf.Log(i - 1), spectrum[i - 1] - 10, 1), new Vector3(Mathf.Log(i), spectrum[i] - 10, 1), Color.green);
             Debug.DrawLine(new Vector3(Mathf.Log(i - 1), Mathf.Log(spectrum[i - 1]), 3), new Vector3(Mathf.Log(i), Mathf.Log(spectrum[i]), 3), Color.yellow);
             i++;
+        }
+    }
+
+    void OnApplicationQuit()
+    {
+        if (this.reader != null)
+        {
+            // AudioBeamFrameReader is IDisposable
+            this.reader.Dispose();
+            this.reader = null;
+        }
+
+        if (this.kinectSensor != null)
+        {
+            this.kinectSensor.Close();
+            this.kinectSensor = null;
         }
     }
 

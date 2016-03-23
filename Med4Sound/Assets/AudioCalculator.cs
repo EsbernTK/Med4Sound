@@ -24,20 +24,24 @@ public class AudioCalculator : NetworkBehaviour
         if (Network.isServer)
         {
             kinectSensor = KinectSensor.GetDefault();
+            kinectSensor.AudioSource.PropertyChanged += UpdateAudioTrackingPosition;
         }
-        kinectSensor.AudioSource.PropertyChanged += UpdateAudioTrackingPosition;
-
     }
 
     private GameObject[] players;
     // Update is called once per frame
     void Update ()
 	{
-
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            kinectSensor = KinectSensor.GetDefault();
+            kinectSensor.AudioSource.PropertyChanged += UpdateAudioTrackingPosition;
+        }
 	}
 
     public void UpdateAudioTrackingPosition(object sender, Windows.Data.PropertyChangedEventArgs e)
     {
+        Debug.Log("Event Changed!");
         if (offsetCalculator.players.Length > 0)
         {
             float angle1 = Mathf.Rad2Deg * offsetCalculator.players[0].GetComponent<UserSyncPosition>().beamAngle;

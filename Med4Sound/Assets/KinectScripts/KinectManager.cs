@@ -50,7 +50,7 @@ public class KinectManager : MonoBehaviour
 	public bool useMultiSourceReader = false;
 	
 	// Public Bool to determine whether to use sensor's audio source, if available
-	//public bool useAudioSource = false;
+    public bool useAudioSource = false;
 	
 	[Tooltip("Minimum distance to a user, in order to be considered for skeleton data processing.")]
 	public float minUserDistance = 0.5f;
@@ -1757,8 +1757,8 @@ public class KinectManager : MonoBehaviour
 				dwFlags |= KinectInterop.FrameSource.TypeColor;
 			if(computeInfraredMap)
 				dwFlags |= KinectInterop.FrameSource.TypeInfrared;
-//			if(useAudioSource)
-//				dwFlags |= KinectInterop.FrameSource.TypeAudio;
+			if(useAudioSource)
+				dwFlags |= KinectInterop.FrameSource.TypeAudio;
 
 			// open the default sensor
 			sensorData = KinectInterop.OpenDefaultSensor(sensorInterfaces, dwFlags, sensorAngle, useMultiSourceReader, computeUserMap);

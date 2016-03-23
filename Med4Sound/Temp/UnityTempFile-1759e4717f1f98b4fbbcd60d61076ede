@@ -79,6 +79,7 @@
 -define:UNITY_EDITOR
 -define:UNITY_EDITOR_64
 -define:UNITY_EDITOR_WIN
+Assets/AudioAnalyzer.cs
 Assets/AudioCalculator.cs
 Assets/Clock.cs
 Assets/KinectDemos/BackgroundRemovalDemo/Scripts/ForegroundToImage.cs
@@ -154,6 +155,5 @@ Assets/Scripts/UserSyncPosition.cs
 Assets/Scripts/UserTracking.cs
 Assets/Scripts/VelocityCalculator.cs
 Assets/Scripts/skeletonCreator.cs
-Assets/TestScript.cs
 -r:"C:\Program Files\Unity\Editor\Data\Mono\lib\mono\unity\System.Runtime.Serialization.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Mono\lib\mono\unity\System.Xml.Linq.dll"

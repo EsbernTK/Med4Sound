@@ -168,7 +168,7 @@ public class UserSyncPosition : NetworkBehaviour
             }
             else
             {
-                Debug.Log("Transmitting pos or wha5tever");
+                //Debug.Log("Transmitting pos or wha5tever");
                 //The KinectManager must be there therefore Move & Orient to tracked individual and Tell the server my new posistion and rotation
                 MoveWithUser();
                 OrientWithUser();
