@@ -4,13 +4,15 @@ using System.Collections;
 using Windows.Kinect;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 public class TestScript : MonoBehaviour{
 
     Windows.Kinect.AudioSource aSource1;
     Windows.Kinect.AudioSource aSource2;
 
-    public GameObject AudiGameObject;
+    public UnityEngine.AudioSource unityAudioSource;
+    public GameObject AudioGameObject;
     /// <summary>
     /// Number of samples captured from Kinect audio stream each millisecond.
     /// </summary>
@@ -49,7 +51,7 @@ public class TestScript : MonoBehaviour{
     /// <summary>
     /// Will be allocated a buffer to hold a single sub frame of audio data read from audio stream.
     /// </summary>
-    private readonly byte[] audioBuffer = null;
+    private byte[] audioBuffer = null;
 
     /// <summary>
     /// Buffer used to store audio stream energy data as we read audio.
@@ -133,50 +135,40 @@ public class TestScript : MonoBehaviour{
     // Use this for initialization
     void Start () {
         kinectSensor = KinectSensor.GetDefault();
-        aSource1 = kinectSensor.AudioSource;
-        aBeam = aSource1.AudioBeams[0];
-        //aSource2 = 
+        // Get its audio source
+        Windows.Kinect.AudioSource audioSource = kinectSensor.AudioSource;
+
+        unityAudioSource = GetComponent<UnityEngine.AudioSource>();
+
+        // Allocate 1024 bytes to hold a single audio sub frame. Duration sub frame 
+        // is 16 msec, the sample rate is 16khz, which means 256 samples per sub frame. 
+        // With 4 bytes per sample, that gives us 1024 bytes.
+        audioBuffer = new byte[audioSource.SubFrameLengthInBytes];
+
+        // Open the reader for the audio frames
+        reader = audioSource.OpenReader();
+
+        if (reader != null)
+        {
+            // Subscribe to new audio frame arrived events
+            reader.FrameArrived += Reader_FrameArrived;
+        }
     }
 
     public Vector3 SyncSoundSource;
     // Update is called once per frame
+
+    public bool record = false;
+    public float recordingTime = 2;
+
     void Update() {
-        //Debug.Log(kinectSensor.AudioSource.AudioBeams[0].BeamAngle + " beamangle 1");
-        //aSource1.AudioBeams[0].
-        if (Input.GetKeyDown(KeyCode.A))
+        if (record)
         {
-            //SampleAudio();
+            
         }
     }
 
-
-    public void SimpleAudioTracking()
-    {
-        
-    }
-
-
-    public List<byte[]> soundSamples = new List<byte[]>();
-
-    public void SampleAudio()
-    {
-
-       AudioBeamFrameReader frameReader = aBeam.AudioSource.OpenReader();
-       IList <AudioBeamFrame> beamFrames = frameReader.AcquireLatestBeamFrames();
-
-        Debug.Log(beamFrames.Count);
-        Debug.Log(beamFrames[0].SubFrames.Count);
-        foreach(AudioBeamFrame frame in beamFrames)
-        {
-            for (int i = 0; i < frame.SubFrames.Count; i++) {
-                byte[] temparr = new byte[1024];
-                frame.SubFrames[i].CopyFrameDataToArray(temparr);
-                soundSamples.Add(temparr);
-                }
-        }
-
-        Debug.Log(soundSamples.Count);
-    }
+    public IList<float> audioRecording; 
 
     /// <summary>
     /// Handles the audio frame data arriving from the sensor
@@ -189,7 +181,7 @@ public class TestScript : MonoBehaviour{
        // AudioBeamFrameList frameList = frameReference.AcquireBeamFrames();
         IList<AudioBeamFrame> frameList = frameReference.AcquireBeamFrames();
         //AudioBeamFrameList frameList = new AudioBeamFrameList( );
-
+        audioRecording = new List<float>();
         //IList<AudioBeamFrame> frameList = frameReference.AcquireBeamFrames();
 
         if (frameList != null)
@@ -200,35 +192,14 @@ public class TestScript : MonoBehaviour{
                 // Loop over all sub frames, extract audio buffer and beam information
                 foreach (AudioBeamSubFrame subFrame in subFrameList)
                 {
-                    // Check if beam angle and/or confidence have changed
-                    bool updateBeam = false;
-
-                    if (subFrame.BeamAngle != this.beamAngle)
-                    {
-                        this.beamAngle = subFrame.BeamAngle;
-                        updateBeam = true;
-                    }
-
-                    if (subFrame.BeamAngleConfidence != this.beamAngleConfidence)
-                    {
-                        this.beamAngleConfidence = subFrame.BeamAngleConfidence;
-                        updateBeam = true;
-                    }
-
-                    if (updateBeam)
-                    {
-                        // Refresh display of audio beam
-                        //this.AudioBeamChanged();
-                    }
-
                     // Process audio buffer
                     subFrame.CopyFrameDataToArray(this.audioBuffer);
-
                     for (int i = 0; i < this.audioBuffer.Length; i += BytesPerSample)
                     {
                         // Extract the 32-bit IEEE float sample from the byte array
-                        float audioSample = BitConverter.ToSingle(this.audioBuffer, i);
-
+                        float audioSample = BitConverter.ToSingle(audioBuffer, i);
+                        // add audiosample to array for analysis
+                        audioRecording.Add(audioSample);
                         this.accumulatedSquareSum += audioSample * audioSample;
                         ++this.accumulatedSampleCount;
 
@@ -254,20 +225,30 @@ public class TestScript : MonoBehaviour{
                             energy = (float)(10.0 * Math.Log10(meanSquare));
                         }
 
-                        lock (this.energyLock)
-                        {
-                            // Normalize values to the range [0, 1] for display
-                            this.energy[this.energyIndex] = (MinEnergy - energy) / MinEnergy;
-                            this.energyIndex = (this.energyIndex + 1) % this.energy.Length;
-                            ++this.newEnergyAvailable;
-                        }
-
                         this.accumulatedSquareSum = 0;
                         this.accumulatedSampleCount = 0;
                     }
                 }
-            }
+                //Add sound array to the unity audio source
+            unityAudioSource.clip.SetData(audioRecording.ToArray(), 0);
+            AnalyzeSound();
         }
+        }
+
+    float[] spectrum = new float[256];
+    private void AnalyzeSound()
+    {
+        unityAudioSource.GetSpectrumData(spectrum, 0, FFTWindow.BlackmanHarris);
+        int i = 1;
+        while (i < spectrum.Length - 1)
+        {
+            Debug.DrawLine(new Vector3(i - 1, spectrum[i] + 10, 0), new Vector3(i, spectrum[i + 1] + 10, 0), Color.red);
+            Debug.DrawLine(new Vector3(i - 1, Mathf.Log(spectrum[i - 1]) + 10, 2), new Vector3(i, Mathf.Log(spectrum[i]) + 10, 2), Color.cyan);
+            Debug.DrawLine(new Vector3(Mathf.Log(i - 1), spectrum[i - 1] - 10, 1), new Vector3(Mathf.Log(i), spectrum[i] - 10, 1), Color.green);
+            Debug.DrawLine(new Vector3(Mathf.Log(i - 1), Mathf.Log(spectrum[i - 1]), 3), new Vector3(Mathf.Log(i), Mathf.Log(spectrum[i]), 3), Color.yellow);
+            i++;
+        }
+    }
 
 }
 

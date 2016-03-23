@@ -66,6 +66,7 @@ public class UserSyncPosition : NetworkBehaviour
         }
     }
 
+
     [ClientCallback]
     //Fixed update runs every physics step instead of every frame. The physics step is usually in lockstep with a timed value therefore better for networking
     void FixedUpdate () {

@@ -8,7 +8,7 @@ public class AudioCalculator : NetworkBehaviour
     //[SyncVar] private float beamAngle;
     //[SyncVar] private float beamAngle2;
     [SyncVar] public Vector3 TrackedVector3;
-
+    public SyncList<float> BeamAngleSyncList; 
     public GameObject AudioTrackedGameObject;
     private Vector3 kinectOffset;
     private OffsetCalculator offsetCalculator;
@@ -23,33 +23,47 @@ public class AudioCalculator : NetworkBehaviour
     void Start () {
         if (Network.isServer)
         {
-            
             kinectSensor = KinectSensor.GetDefault();
         }
+        kinectSensor.AudioSource.PropertyChanged += UpdateAudioTrackingPosition;
+
     }
 
     private GameObject[] players;
     // Update is called once per frame
     void Update ()
 	{
-        // if (Network.isServer)
-        // {
-        offsetCalculator = OffsetCalculator.offsetCalculator;
-        if (offsetCalculator.players.Length > 0)
-	        {
-                float angle1 = Mathf.Rad2Deg * offsetCalculator.players[0].GetComponent<UserSyncPosition>().beamAngle;
-                float angle2 = Mathf.Rad2Deg * offsetCalculator.players[1].GetComponent<UserSyncPosition>().beamAngle;
+        //offsetCalculator = OffsetCalculator.offsetCalculator;
+        //if (offsetCalculator.players.Length > 0)
+	       // {
+        //        float angle1 = Mathf.Rad2Deg * offsetCalculator.players[0].GetComponent<UserSyncPosition>().beamAngle;
+        //        float angle2 = Mathf.Rad2Deg * offsetCalculator.players[1].GetComponent<UserSyncPosition>().beamAngle;
 
+        //        Vector3 interSectionPoint = offsetCalculator.vectorIntersectionPoint(angle1, angle2);
+        //        TrackedVector3 = interSectionPoint;
+	       //     AudioTrackedGameObject.transform.position = TrackedVector3;
+	       // }
+	}
+
+    public void UpdateAudioTrackingPosition(object sender, Windows.Data.PropertyChangedEventArgs e)
+    {
+        if (offsetCalculator.players.Length > 0)
+        {
+            float angle1 = Mathf.Rad2Deg * offsetCalculator.players[0].GetComponent<UserSyncPosition>().beamAngle;
+            float angle2 = Mathf.Rad2Deg * offsetCalculator.players[1].GetComponent<UserSyncPosition>().beamAngle;
+            
+            if (angle1 > 0 && angle2 > 0)
+            {
                 Vector3 interSectionPoint = offsetCalculator.vectorIntersectionPoint(angle1, angle2);
                 TrackedVector3 = interSectionPoint;
-	            AudioTrackedGameObject.transform.position = TrackedVector3;
-	        }
-	    //}
-	}
+                AudioTrackedGameObject.transform.position = TrackedVector3;
+            }
+        }
+    }
 
     void OnDrawGizmos()
     {
-        Gizmos.DrawCube(TrackedVector3,Vector3.one);
+        Gizmos.DrawSphere(TrackedVector3,1f);
     }
 
 }
