@@ -37,7 +37,21 @@ public class AudioCalculator : NetworkBehaviour
             kinectSensor = KinectSensor.GetDefault();
             kinectSensor.AudioSource.PropertyChanged += UpdateAudioTrackingPosition;
         }
-	}
+        if (offsetCalculator.players.Length > 0)
+        {
+            float angle1 = Mathf.Rad2Deg * offsetCalculator.players[0].GetComponent<UserSyncPosition>().beamAngle;
+            float angle2 = Mathf.Rad2Deg * offsetCalculator.players[1].GetComponent<UserSyncPosition>().beamAngle;
+
+            if (angle1 <= angle2 + offsetCalculator.rotationalOffset.y)
+            {
+                return;
+
+            }
+            Vector3 interSectionPoint = offsetCalculator.vectorIntersectionPoint(angle1, angle2);
+            TrackedVector3 = interSectionPoint;
+            AudioTrackedGameObject.transform.position = TrackedVector3;
+        }
+    }
 
     public void UpdateAudioTrackingPosition(object sender, Windows.Data.PropertyChangedEventArgs e)
     {
