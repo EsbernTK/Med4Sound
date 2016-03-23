@@ -1,4 +1,8 @@
 sceneSetups:
+<<<<<<< HEAD
 - path: Assets/Calibration Scene.unity
+=======
+- path: Assets/Velocity Scene.unity
+>>>>>>> origin/master
   isLoaded: 1
   isActive: 1

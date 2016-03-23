@@ -33,11 +33,21 @@ public class AudioCalculator : NetworkBehaviour
     // Update is called once per frame
     void Update ()
 	{
+<<<<<<< HEAD
         //offsetCalculator = OffsetCalculator.offsetCalculator;
         //if (offsetCalculator.players.Length > 0)
 	       // {
         //        float angle1 = Mathf.Rad2Deg * offsetCalculator.players[0].GetComponent<UserSyncPosition>().beamAngle;
         //        float angle2 = Mathf.Rad2Deg * offsetCalculator.players[1].GetComponent<UserSyncPosition>().beamAngle;
+=======
+        //if (Network.isServer)
+        //{
+        offsetCalculator = OffsetCalculator.offsetCalculator;
+	        if (offsetCalculator.players.Length > 0)
+	        {
+                float angle1 = Mathf.Rad2Deg * offsetCalculator.players[0].GetComponent<UserSyncPosition>().beamAngle;
+                float angle2 = Mathf.Rad2Deg * offsetCalculator.players[1].GetComponent<UserSyncPosition>().beamAngle;
+>>>>>>> origin/master
 
         //        Vector3 interSectionPoint = offsetCalculator.vectorIntersectionPoint(angle1, angle2);
         //        TrackedVector3 = interSectionPoint;
@@ -56,6 +66,7 @@ public class AudioCalculator : NetworkBehaviour
             {
                 Vector3 interSectionPoint = offsetCalculator.vectorIntersectionPoint(angle1, angle2);
                 TrackedVector3 = interSectionPoint;
+<<<<<<< HEAD
                 AudioTrackedGameObject.transform.position = TrackedVector3;
             }
         }
@@ -65,5 +76,11 @@ public class AudioCalculator : NetworkBehaviour
     {
         Gizmos.DrawSphere(TrackedVector3,1f);
     }
+=======
+	            AudioTrackedGameObject.transform.position = TrackedVector3;
+	        }
+	   // }
+	}
+>>>>>>> origin/master
 
 }
