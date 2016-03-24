@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class skeletonCreator : NetworkBehaviour {
 
+    OffsetCalculator offsetCalculator;
     public GameObject[] players;
     public GameObject prefab;
     readonly Vector3 initialPosVector3 = new Vector3(50, 50, 50);
@@ -13,18 +14,47 @@ public class skeletonCreator : NetworkBehaviour {
     public int[] tempJoints;
     string test;
     long playerID;
+    int jointAmount;
     KinectManager manager;
     public Button button;
     public Button button2;
     float time;
     float sendRate;
+    [SyncVar] Vector3[] positions;
+    [SyncVar] Vector3 rotation;
     // Use this for initialization
     void Start () {
-        players = new GameObject[20];
+        jointAmount = 20;
+        offsetCalculator = OffsetCalculator.offsetCalculator;
+        players = new GameObject[jointAmount];
         sendRate = 0.1f;
         time = 0;
         //spawnObjects();
 
+    }
+    void getJointPositionsAndRotations()
+    {
+        positions = new Vector3[jointAmount];
+        Quaternion userOrientation = manager.GetJointOrientation(manager.GetUserIdByIndex(0), 0, false);
+        rotation = userOrientation.eulerAngles;
+        for(int i = 0; i < jointAmount; i++)
+        {
+            positions[i] = manager.GetJointPosition(manager.GetUserIdByIndex(0), i);
+        }
+    }
+    [Command]
+    void cmd_sendJointPositions(Vector3[] positions, Vector3 rotation)
+    {
+        this.positions = positions;
+        this.rotation = rotation;
+    }
+    void applyPosition()
+    {
+        for (int i = 0; i < players.Length; i++)
+        {
+            players[i].transform.position = positions[i];
+            OrientWithUser(players[i]);
+        }
     }
     public override void OnStartClient()
     {
@@ -65,6 +95,12 @@ public class skeletonCreator : NetworkBehaviour {
                 time = 0;
             }
             time += Time.deltaTime;
+        }
+        if(manager != null)
+        {
+            getJointPositionsAndRotations();
+            cmd_sendJointPositions(positions, rotation);
+            applyPosition();
         }
     }
     void getTrackedJoints()
@@ -151,6 +187,15 @@ public class skeletonCreator : NetworkBehaviour {
         }
         return temp;
     }
+    Vector3[] toArray(List<Vector3> list)
+    {
+        Vector3[] temp = new Vector3[list.Count];
+        for (int i = 0; i < list.Count; i++)
+        {
+            temp[i] = list[i];
+        }
+        return temp;
+    }
     List<int> toList(int[] list)
     {
         List<int> temp = new List<int>();
@@ -159,5 +204,28 @@ public class skeletonCreator : NetworkBehaviour {
             temp.Add(list[i]);
         }
         return temp;
+    }
+    [Client]
+    //This method is responsible for orienting the cube so it rotation and tilt coressponds to the tracked person orientation
+    private void OrientWithUser(GameObject target)
+    {
+        //If a skeleteon is tracked
+        if (manager.IsUserDetected())
+        {
+            Quaternion userOrientation = Quaternion.Euler(rotation);
+            //Quaternion userOrientation = manager.GetUserOrientation(0, false);
+
+            if (offsetCalculator.rotationalOffset.magnitude > Vector3.zero.magnitude)
+            {
+                //Offset the rotation by the offsetcalculators offsetVector and apply to this gameObject
+                userOrientation.eulerAngles -= new Vector3(offsetCalculator.rotationalOffset.x, offsetCalculator.rotationalOffset.y, 0);
+                target.transform.rotation = userOrientation;
+            }
+            else
+            {
+                //Simple Apply this rotation to this gameObject
+                target.transform.rotation = userOrientation;
+            }
+        }
     }
 }
